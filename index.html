@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Infera</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #e3f2fd 0%,
+          #f0f8ff 50%,
+          #e1f5fe 100%
+        );
+        color: #1565c0;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        line-height: 1.6;
+      }
+
+      #summaryContainer {
+        font-family: Arial, sans-serif;
+        font-size: 12pt;
+        line-height: 1.5;
+        color: #003366;
+      }
+      #summaryContainer h2,
+      #summaryContainer h3 {
+        color: #004080;
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+      }
+      #summaryContainer ul {
+        margin-left: 1.5em;
+      }
+
+      header {
+        background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+        padding: 2rem;
+        text-align: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.8rem;
+        letter-spacing: -0.02em;
+        box-shadow: 0 4px 20px rgba(25, 118, 210, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+
+      header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="white" opacity="0.1"/><circle cx="80" cy="30" r="1.5" fill="white" opacity="0.1"/><circle cx="40" cy="70" r="1" fill="white" opacity="0.1"/><circle cx="90" cy="80" r="2.5" fill="white" opacity="0.1"/><circle cx="10" cy="90" r="1.2" fill="white" opacity="0.1"/></svg>')
+          repeat;
+        animation: float 20s linear infinite;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(100px);
+        }
+      }
+
+      main {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(25, 118, 210, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        position: relative;
+      }
+
+      main::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #42a5f5, #1976d2, #1565c0, #0d47a1);
+        border-radius: 20px 20px 0 0;
+      }
+
+      label {
+        font-weight: 600;
+        color: #1565c0;
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+      }
+
+      input[type="file"] {
+        width: 100%;
+        padding: 1rem;
+        border: 2px dashed #42a5f5;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #f3f9ff 0%, #e8f4fd 100%);
+        margin: 1rem 0 1.5rem 0;
+        font-size: 1rem;
+        color: #1565c0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      input[type="file"]:hover {
+        border-color: #1976d2;
+        background: linear-gradient(135deg, #e8f4fd 0%, #e3f2fd 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+      }
+
+      button {
+        background: linear-gradient(135deg, #1976d2 0%, #348aec 100%);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-right: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+      }
+
+      button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      button:hover {
+        background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4);
+      }
+
+      button:hover::before {
+        left: 100%;
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .loading {
+        color: #1976d2;
+        font-weight: 600;
+        margin-top: 1rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+        border-radius: 12px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .loading::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(25, 118, 210, 0.1),
+          transparent
+        );
+        animation: loading 1.5s infinite;
+      }
+
+      @keyframes loading {
+        0% {
+          left: -100%;
+        }
+        100% {
+          left: 100%;
+        }
+      }
+
+      .error {
+        color: #d32f2f;
+        font-weight: 600;
+        margin-top: 1rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
+        border: 1px solid #f8bbd9;
+        border-radius: 12px;
+        text-align: center;
+      }
+
+      /* Tabs */
+      .tabs {
+        display: flex;
+        border-bottom: none;
+        margin-bottom: 1.5rem;
+        background: rgba(245, 249, 255, 0.6);
+        border-radius: 16px;
+        padding: 6px;
+        backdrop-filter: blur(10px);
+        gap: 4px;
+      }
+
+      .tab {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        color: #1976d2;
+        font-weight: 600;
+        border: none;
+        background: transparent;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+
+      .tab:hover {
+        background: rgba(25, 118, 210, 0.1);
+        color: #1565c0;
+      }
+
+      .tab.active {
+        background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .tab-content {
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(25, 118, 210, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        color: #1565c0;
+        box-shadow: 0 4px 20px rgba(25, 118, 210, 0.1);
+      }
+
+      /* Scrollable pre */
+      pre {
+        background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        max-height: 400px;
+        overflow: auto;
+        border: 1px solid rgba(25, 118, 210, 0.2);
+        font-family: "Fira Code", monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      /* Summary container */
+      .summary-container h1,
+      .summary-container h2 {
+        color: #1565c0;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+      }
+
+      .summary-container h2 {
+        font-size: 1.5rem;
+        position: relative;
+        padding-left: 1rem;
+      }
+
+      .summary-container h2::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(135deg, #42a5f5, #1976d2);
+        border-radius: 2px;
+      }
+
+      .summary-container h3 {
+        color: #1976d2;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+      }
+
+      ul,
+      ol {
+        margin-left: 1.5rem;
+        color: #1565c0;
+      }
+
+      ul li,
+      ol li {
+        margin-bottom: 0.5rem;
+        position: relative;
+      }
+
+      ul li::marker {
+        color: #42a5f5;
+      }
+
+      strong {
+        color: #0d47a1;
+        font-weight: 700;
+      }
+
+      p {
+        margin-bottom: 1rem;
+        color: #1976d2;
+      }
+
+      /* Action Items */
+      .action-items {
+        max-height: 250px;
+        overflow-y: auto;
+        border: 1px solid rgba(25, 118, 210, 0.2);
+        padding: 1rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%);
+        backdrop-filter: blur(5px);
+      }
+
+      .action-items label {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        margin-bottom: 0.8rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        color: #1976d2;
+      }
+
+      .action-items label:hover {
+        background: rgba(25, 118, 210, 0.05);
+        transform: translateX(4px);
+      }
+
+      .action-items input[type="checkbox"] {
+        margin-right: 0.8rem;
+        width: 18px;
+        height: 18px;
+        accent-color: #1976d2;
+        cursor: pointer;
+      }
+
+      /* Timeline styles */
+      .timeline {
+        display: flex;
+        overflow-x: auto;
+        padding: 1.5rem 0;
+        gap: 1.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: #42a5f5 #f0f7ff;
+      }
+
+      .timeline::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      .timeline::-webkit-scrollbar-track {
+        background: #f0f7ff;
+        border-radius: 3px;
+      }
+
+      .timeline::-webkit-scrollbar-thumb {
+        background: #42a5f5;
+        border-radius: 3px;
+      }
+
+      .timeline-item {
+        flex: 0 0 auto;
+        background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+        border: 2px solid rgba(25, 118, 210, 0.2);
+        border-radius: 16px;
+        padding: 1rem 1.5rem;
+        text-align: center;
+        min-width: 180px;
+        position: relative;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+      }
+
+      .timeline-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgba(25, 118, 210, 0.2);
+        border-color: #42a5f5;
+      }
+
+      .timeline-item:not(:last-child)::after {
+        content: "→";
+        position: absolute;
+        right: -24px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #42a5f5;
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+
+      .timeline-date {
+        font-weight: 700;
+        color: #1565c0;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+      }
+
+      .timeline-desc {
+        font-size: 0.9rem;
+        color: #1976d2;
+        font-weight: 500;
+      }
+
+      /* Amount cards */
+      .amount-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 1rem;
+      }
+
+      .amount-card {
+        background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+        border: 2px solid rgba(25, 118, 210, 0.2);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        color: #1565c0;
+        display: inline-block;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .amount-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #42a5f5, #1976d2);
+      }
+
+      .amount-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+        border-color: #42a5f5;
+      }
+
+      /* Department */
+      .department-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 12px;
+        background: #eef2ff;
+        color: #1e3a8a;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .note {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 4px;
+        font-style: italic;
+      }
+
+      /* Confidence */
+      .confidence-container {
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .confidence-bar {
+        flex: 1;
+        height: 12px;
+        background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%);
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(25, 118, 210, 0.1);
+        position: relative;
+      }
+
+      .confidence-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #42a5f5, #1976d2);
+        border-radius: 6px;
+        width: 0%;
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .confidence-fill::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        animation: shimmer 2s infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      .confidence-label {
+        min-width: 60px;
+        font-weight: 700;
+        color: #1565c0;
+        font-size: 1rem;
+      }
+
+      /* Language badges */
+      .lang-badges {
+        margin-top: 1.5rem;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .lang-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.6rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(135deg, #1976d2, #1565c0);
+        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+      }
+
+      .lang-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+      }
+
+      .lang-green {
+        background: linear-gradient(135deg, #4caf50, #2e7d32);
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+      }
+
+      .lang-green:hover {
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+      }
+
+      .lang-gray {
+        background: linear-gradient(135deg, #90a4ae, #607d8b);
+        box-shadow: 0 2px 8px rgba(144, 164, 174, 0.3);
+      }
+
+      .lang-gray:hover {
+        box-shadow: 0 4px 12px rgba(144, 164, 174, 0.4);
+      }
+
+      /* Download & Copy Buttons */
+      .download-copy {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(25, 118, 210, 0.2);
+      }
+
+      /* Section headings in structured tab */
+      .tab-content h3 {
+        color: #1565c0;
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .tab-content h3:first-child {
+        margin-top: 0;
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        main {
+          margin: 1rem;
+          padding: 1.5rem;
+        }
+
+        header {
+          padding: 1.5rem;
+          font-size: 1.5rem;
+        }
+
+        .tabs {
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .tab {
+          text-align: center;
+        }
+
+        .timeline {
+          padding: 1rem 0;
+        }
+
+        .timeline-item {
+          min-width: 150px;
+        }
+
+        .confidence-container {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 1rem;
+        }
+
+        .confidence-label {
+          text-align: center;
+        }
+      }
+
+      /* Scrollbar styling for webkit browsers */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #42a5f5 #f0f7ff;
+      }
+
+      *::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      *::-webkit-scrollbar-track {
+        background: #f0f7ff;
+        border-radius: 4px;
+      }
+
+      *::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #42a5f5, #1976d2);
+        border-radius: 4px;
+      }
+
+      *::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #1976d2, #1565c0);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div style="position: relative; z-index: 1">
+        Infera's Document Analyzer
+      </div>
+    </header>
+    <main>
+      <form id="uploadForm">
+        <label for="fileInput">Select PDF:</label>
+        <input
+          type="file"
+          id="fileInput"
+          name="file"
+          accept=".pdf,image/*"
+          required
+        />
+        <button type="submit">Upload & Extract</button>
+      </form>
+      <div id="status" class="loading" style="display: none">Processing...</div>
+      <div id="errorMsg" class="error" style="display: none"></div>
+
+      <div id="results" style="display: none; margin-top: 2rem">
+        <div class="tabs" role="tablist" aria-label="Summary tabs">
+          <button
+            class="tab active"
+            role="tab"
+            aria-selected="true"
+            aria-controls="tab-human"
+            id="tabHumanBtn"
+          >
+            📄 Human Report
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-structured"
+            id="tabStructuredBtn"
+          >
+            🔍 Structured Insights
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-raw"
+            id="tabRawBtn"
+          >
+            📝 Original Text
+          </button>
+        </div>
+
+        <section
+          id="tab-human"
+          class="tab-content"
+          role="tabpanel"
+          aria-labelledby="tabHumanBtn"
+        >
+          <div id="summaryContainer" class="summary-container"></div>
+          <div class="download-copy">
+            <button
+              id="downloadSummaryBtn"
+              class="download-pdf-btn"
+              title="Download formatted summary as PDF"
+            >
+              ⬇️ Download Summary (Infera)
+            </button>
+            <button id="copySummaryBtn" title="Copy summary to clipboard">
+              📋 Copy Summary
+            </button>
+          </div>
+        </section>
+
+        <section
+          id="tab-structured"
+          class="tab-content"
+          role="tabpanel"
+          aria-labelledby="tabStructuredBtn"
+          style="display: none"
+        >
+          <h3>✅ Action Items</h3>
+          <div class="action-items" id="actionItemsContainer"></div>
+
+          <h3>📅 Key Dates Timeline</h3>
+          <div class="timeline" id="datesTimeline"></div>
+
+          <h3>🏢 Department</h3>
+          <div class="department" id="departmentContainer"></div>
+          <p class="note">
+            *Note: Department is auto-detected from the document and may vary
+            (e.g., HR, Finance, Admin, etc.).
+          </p>
+
+          <h3>💰 Financial Information</h3>
+          <div class="amount-cards" id="amountsContainer"></div>
+
+          <h3>🎯 Confidence Score</h3>
+          <div class="confidence-container">
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="confidenceFill"></div>
+            </div>
+            <div class="confidence-label" id="confidenceLabel">0%</div>
+          </div>
+
+          <h3>🌐 Language Detection</h3>
+          <div class="lang-badges" id="langBadges"></div>
+        </section>
+
+        <section
+          id="tab-raw"
+          class="tab-content"
+          role="tabpanel"
+          aria-labelledby="tabRawBtn"
+          style="display: none"
+        >
+          <pre
+            id="rawTextContainer"
+            style="font-size: 0.9rem; white-space: pre-wrap"
+          ></pre>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      // Markdown-like summary to HTML formatter
+      function formatSummaryToHTML(summary) {
+        if (!summary) return "";
+
+        function escapeHtml(text) {
+          return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        }
+
+        const lines = summary.split("\n");
+        let html = "";
+        let listType = null;
+
+        lines.forEach((line) => {
+          line = line.trim();
+          if (line === "") {
+            if (listType) {
+              html += `</${listType}>`;
+              listType = null;
+            }
+            html += "<br/>";
+            return;
+          }
+
+          // Heading detection for ##, **, etc.
+          if (line.startsWith("## ")) {
+            if (listType) {
+              html += `</${listType}>`;
+              listType = null;
+            }
+            html += `<h2>${escapeHtml(line.substring(3).trim())}</h2>`;
+            return;
+          } else if (/^\*\*(.*?)\*\*$/.test(line)) {
+            if (listType) {
+              html += `</${listType}>`;
+              listType = null;
+            }
+            const heading = line.replace(/^\*\*|\*\*$/g, "").trim();
+            html += `<h3>${escapeHtml(heading)}</h3>`;
+            return;
+          }
+
+          // List detection for * items
+          if (line.startsWith("* ")) {
+            if (listType !== "ul") {
+              if (listType) html += `</${listType}>`;
+              listType = "ul";
+              html += "<ul>";
+            }
+            let bullet = escapeHtml(line.substring(2).trim());
+            bullet = bullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            html += `<li>${bullet}</li>`;
+            return;
+          }
+
+          // Normal paragraph
+          if (listType) {
+            html += `</${listType}>`;
+            listType = null;
+          }
+          html += `<p>${escapeHtml(line)}</p>`;
+        });
+
+        if (listType) html += `</${listType}>`;
+
+        return html;
+      }
+
+      // DOM Elements
+      const form = document.getElementById("uploadForm");
+      const fileInput = document.getElementById("fileInput");
+      const status = document.getElementById("status");
+      const errorMsg = document.getElementById("errorMsg");
+
+      const resultsDiv = document.getElementById("results");
+      const summaryContainer = document.getElementById("summaryContainer");
+      const actionItemsContainer = document.getElementById(
+        "actionItemsContainer"
+      );
+      const datesTimeline = document.getElementById("datesTimeline");
+      const amountsContainer = document.getElementById("amountsContainer");
+      const confidenceFill = document.getElementById("confidenceFill");
+      const confidenceLabel = document.getElementById("confidenceLabel");
+      const langBadges = document.getElementById("langBadges");
+      const rawTextContainer = document.getElementById("rawTextContainer");
+      const departmentContainer = document.getElementById(
+        "departmentContainer"
+      );
+
+      // Tab elements
+      const tabHumanBtn = document.getElementById("tabHumanBtn");
+      const tabStructuredBtn = document.getElementById("tabStructuredBtn");
+      const tabRawBtn = document.getElementById("tabRawBtn");
+
+      const tabHuman = document.getElementById("tab-human");
+      const tabStructured = document.getElementById("tab-structured");
+      const tabRaw = document.getElementById("tab-raw");
+
+      // Tab click handlers
+      function setActiveTab(activeBtn, activeContent) {
+        [tabHumanBtn, tabStructuredBtn, tabRawBtn].forEach((btn) => {
+          btn.classList.remove("active");
+          btn.setAttribute("aria-selected", "false");
+        });
+        [tabHuman, tabStructured, tabRaw].forEach(
+          (sec) => (sec.style.display = "none")
+        );
+
+        activeBtn.classList.add("active");
+        activeBtn.setAttribute("aria-selected", "true");
+        activeContent.style.display = "block";
+      }
+
+      tabHumanBtn.addEventListener("click", () =>
+        setActiveTab(tabHumanBtn, tabHuman)
+      );
+      tabStructuredBtn.addEventListener("click", () =>
+        setActiveTab(tabStructuredBtn, tabStructured)
+      );
+      tabRawBtn.addEventListener("click", () =>
+        setActiveTab(tabRawBtn, tabRaw)
+      );
+
+      // Render Action Items checklist with fallback message
+      function renderActionItems(actionItems) {
+        actionItemsContainer.innerHTML = "";
+        if (!actionItems || actionItems.length === 0) {
+          actionItemsContainer.textContent = "No action items extracted.";
+          return;
+        }
+        actionItems.forEach((item, i) => {
+          const label = document.createElement("label");
+          label.htmlFor = `actionItem${i}`;
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.id = `actionItem${i}`;
+          checkbox.title = item.action || "Action item";
+          label.appendChild(checkbox);
+
+          const span = document.createElement("span");
+          span.textContent = item.action;
+          if (item.due_date) {
+            span.textContent += ` (Due: ${item.due_date})`;
+          }
+          label.appendChild(span);
+
+          actionItemsContainer.appendChild(label);
+        });
+      }
+
+      // Render Timeline for key dates with fallback
+      function renderTimeline(dates) {
+        datesTimeline.innerHTML = "";
+        if (!dates || dates.length === 0) {
+          datesTimeline.textContent = "No key dates extracted.";
+          return;
+        }
+        // Sort dates ascending
+        dates.sort((a, b) => (a.date > b.date ? 1 : -1));
+        dates.forEach((dateItem) => {
+          const div = document.createElement("div");
+          div.className = "timeline-item";
+          const dateDiv = document.createElement("div");
+          dateDiv.textContent = dateItem.date;
+          dateDiv.className = "timeline-date";
+          div.appendChild(dateDiv);
+
+          const descDiv = document.createElement("div");
+          descDiv.textContent = dateItem.description || dateItem.label || "";
+          descDiv.className = "timeline-desc";
+          div.appendChild(descDiv);
+
+          datesTimeline.appendChild(div);
+        });
+      }
+
+      // Render Amount cards with fallback
+      function renderAmounts(amounts) {
+        amountsContainer.innerHTML = "";
+        if (!amounts || amounts.length === 0) {
+          amountsContainer.textContent = "No amounts extracted.";
+          return;
+        }
+        amounts.forEach((amountItem) => {
+          const div = document.createElement("div");
+          div.className = "amount-card";
+
+          let text = amountItem.amount || amountItem.value || "";
+          if (amountItem.unit) text += " " + amountItem.unit;
+          div.textContent = text;
+
+          amountsContainer.appendChild(div);
+        });
+      }
+
+      // Render Department
+      function renderDepartment(department) {
+        departmentContainer.innerHTML = "";
+        if (!department || department.trim() === "") {
+          departmentContainer.textContent = "No department detected.";
+          return;
+        }
+
+        const div = document.createElement("div");
+        div.className = "department-badge";
+        div.textContent = department;
+        departmentContainer.appendChild(div);
+      }
+
+      // Render Confidence score safely
+      function renderConfidence(confidence) {
+        let percent = 0;
+        if (
+          typeof confidence === "number" &&
+          confidence >= 0 &&
+          confidence <= 1
+        ) {
+          percent = Math.round(confidence * 100);
+        }
+        confidenceFill.style.width = percent + "%";
+        confidenceLabel.textContent = percent + "%";
+      }
+
+      // Render Languages badges safely
+      function renderLanguages(languageObj) {
+        langBadges.innerHTML = "";
+        if (!languageObj || typeof languageObj !== "object") {
+          langBadges.textContent = "No language detection data.";
+          return;
+        }
+        const detected = languageObj.detected || [];
+        const confidence = languageObj.confidence || {};
+
+        if (detected.length === 0) {
+          langBadges.textContent = "No languages detected.";
+          return;
+        }
+
+        detected.forEach((langCode) => {
+          const confidenceVal = confidence[langCode] || 0;
+          const badge = document.createElement("div");
+          badge.className =
+            "lang-badge " + (confidenceVal >= 0.7 ? "lang-green" : "lang-gray");
+          badge.textContent =
+            langCode.toUpperCase() + ` (${Math.round(confidenceVal * 100)}%)`;
+          langBadges.appendChild(badge);
+        });
+      }
+
+      // Download text helper
+      function downloadText(filename, text) {
+        const blob = new Blob([text], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.download = filename;
+        a.href = URL.createObjectURL(blob);
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(a.href);
+        }, 100);
+      }
+
+      // Copy to clipboard helper
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          alert("Copied to clipboard!");
+        } catch (err) {
+          alert("Failed to copy: " + err);
+        }
+      }
+
+      // Form submit handler
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorMsg.style.display = "none";
+        resultsDiv.style.display = "none";
+        status.style.display = "block";
+
+        const file = fileInput.files[0];
+        if (!file) {
+          errorMsg.textContent = "Please select a file.";
+          errorMsg.style.display = "block";
+          status.style.display = "none";
+          return;
+        }
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const response = await fetch("http://localhost:5000/extract-text", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await response.json();
+
+          status.style.display = "none";
+          if (!response.ok) {
+            throw new Error(data.error || "Server error");
+          }
+          resultsDiv.style.display = "block";
+
+          if (
+            data.summary &&
+            data.summary.human_report &&
+            data.summary.human_report.trim() !== ""
+          ) {
+            summaryContainer.innerHTML = formatSummaryToHTML(
+              data.summary.human_report
+            );
+          } else {
+            summaryContainer.textContent = "No human summary available.";
+          }
+
+          rawTextContainer.textContent = data.text || "No text extracted.";
+
+          if (data.summary && data.summary.json) {
+            const json = data.summary.json;
+
+            renderActionItems(json.action_items);
+            renderTimeline(
+              (json.dates || []).map((item) => ({
+                date: item.date || item,
+                description: item.label || item.description || "",
+              }))
+            );
+            renderAmounts(json.amounts);
+            renderConfidence(json.confidence_overall);
+            renderLanguages(json.language);
+            renderDepartment(json.department);
+          } else {
+            actionItemsContainer.textContent =
+              "No structured insights available.";
+            datesTimeline.textContent = "No structured insights available.";
+            amountsContainer.textContent = "No structured insights available.";
+            confidenceFill.style.width = "0%";
+            confidenceLabel.textContent = "0%";
+            langBadges.textContent = "No language detection data.";
+          }
+        } catch (err) {
+          status.style.display = "none";
+          errorMsg.textContent = "Error: " + err.message;
+          errorMsg.style.display = "block";
+        }
+      });
+
+      // Replace your existing downloadSummaryBtn event listener with this enhanced version
+      async function loadMalayalamFont(doc) {
+        const fontUrl = "fonts/NotoSansMalayalam-Regular.ttf"; // path to your .ttf
+        const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
+        const fontBase64 = btoa(
+          new Uint8Array(fontBytes).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ""
+          )
+        );
+
+        doc.addFileToVFS("NotoSansMalayalam-Regular.ttf", fontBase64);
+        doc.addFont("NotoSansMalayalam-Regular.ttf", "NotoMalayalam", "normal");
+      }
+
+      document
+        .getElementById("downloadSummaryBtn")
+        .addEventListener("click", async () => {
+          const { jsPDF } = window.jspdf;
+
+          const doc = new jsPDF({
+            unit: "pt",
+            format: "a4",
+            compress: true,
+          });
+
+          await loadMalayalamFont(doc);
+
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+          const margin = 50;
+          let currentY = 80;
+          let pageNum = 1;
+
+          // Professional colors
+          const colors = {
+            primary: "#1565c0",
+            secondary: "#1976d2",
+            accent: "#42a5f5",
+            text: "#333333",
+          };
+
+          // Helper functions
+          function addHeader(pageNumber) {
+            // Infera logo background
+            doc.setFillColor(colors.primary);
+            doc.roundedRect(margin, 25, 120, 30, 5, 5, "F");
+
+            doc.setTextColor("#ffffff");
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.text("INFERA", margin + 25, 45);
+
+            // Title
+            doc.setTextColor(colors.primary);
+            doc.setFontSize(18);
+            const title = "Document Summary";
+            const titleWidth = doc.getTextWidth(title);
+            doc.text(title, (pageWidth - titleWidth) / 2, 45);
+
+            // Date & Page
+            doc.setFontSize(10);
+            doc.setTextColor(colors.text);
+            doc.setFont("helvetica", "normal");
+            const date = new Date().toLocaleDateString();
+            doc.text(`Generated: ${date}`, pageWidth - margin - 120, 35);
+            doc.text(`Page ${pageNumber}`, pageWidth - margin - 60, 50);
+
+            // Divider line
+            doc.setDrawColor(colors.accent);
+            doc.setLineWidth(2);
+            doc.line(margin, 65, pageWidth - margin, 65);
+
+            return 90;
+          }
+
+          function addFooter() {
+            doc.setFontSize(8);
+            doc.setTextColor("#666666");
+            doc.line(
+              margin,
+              pageHeight - 40,
+              pageWidth - margin,
+              pageHeight - 40
+            );
+            const footer =
+              "INFERA - Professional Document Intelligence | Confidential";
+            const footerWidth = doc.getTextWidth(footer);
+            doc.text(footer, (pageWidth - footerWidth) / 2, pageHeight - 25);
+          }
+
+          function checkNewPage(height) {
+            if (currentY + height > pageHeight - 70) {
+              addFooter();
+              doc.addPage();
+              pageNum++;
+              currentY = addHeader(pageNum);
+            }
+          }
+
+          function addSection(title, icon = "") {
+            checkNewPage(50);
+            doc.setFillColor("#f8fbff");
+            doc.roundedRect(
+              margin,
+              currentY - 5,
+              pageWidth - 2 * margin,
+              35,
+              5,
+              5,
+              "F"
+            );
+
+            doc.setTextColor(colors.primary);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+
+            // Only include icon if provided
+            const heading = icon ? `${icon} ${title}` : title;
+            doc.text(heading, margin + 15, currentY + 18);
+            currentY += 45;
+          }
+
+          function addText(text, options = {}) {
+  const fontSize = options.size || 11;
+  const style = options.style || "normal";
+  const color = options.color || colors.text;
+  const indent = options.indent || 0;
+  const space = options.space !== undefined ? options.space : 8;
+
+  // Detect Malayalam
+  const hasMalayalam = /[\u0D00-\u0D7F]/.test(text);
+
+  if (hasMalayalam) {
+    // Placeholder for Malayalam text
+    const placeholder =
+      "Cannot add Malayalam text in PDF. You can see the summary on the Analyze Dashboard.";
+    const lines = doc.splitTextToSize(placeholder, pageWidth - 2 * margin - indent);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(fontSize);
+    doc.setTextColor("#666"); // gray for placeholder
+
+    lines.forEach((line) => {
+      checkNewPage(fontSize + space);
+      doc.text(line, margin + indent, currentY);
+      currentY += fontSize + space;
+    });
+    return; // Stop further processing for this text
+  }
+
+  // Normal (non-Malayalam) text
+  doc.setFont("helvetica", style);
+  doc.setFontSize(fontSize);
+  doc.setTextColor(color);
+
+  const lines = doc.splitTextToSize(text, pageWidth - 2 * margin - indent);
+  lines.forEach((line) => {
+    checkNewPage(fontSize + space);
+    doc.text(line, margin + indent, currentY);
+    currentY += fontSize + space;
+  });
+}
+
+// Add headings / paragraphs from lines
+function addParagraphsFromLines(lines) {
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    if (trimmed.endsWith(":") || trimmed.startsWith("#")) {
+      addText(trimmed, {
+        size: 11,
+        style: "bold",
+        color: colors.primary,
+        space: 14,
+      });
+    } else {
+      addText(trimmed, { size: 10, space: 8 });
+    }
+  });
+}
+// ============================
+// PDF Generation Functions
+// ============================
+
+// Add text to PDF
+function addText(text, options = {}) {
+  const fontSize = options.size || 11;
+  const style = options.style || "normal";
+  const color = options.color || colors.text;
+  const indent = options.indent || 0;
+  const space = options.space !== undefined ? options.space : 8;
+
+  const hasMalayalam = /[\u0D00-\u0D7F]/.test(text);
+
+  if (hasMalayalam) {
+    // Only add placeholder once per paragraph
+    if (!addText.malayalamPlaceholderAdded) {
+      const placeholder =
+        "Cannot add Malayalam text in PDF. You can see the summary on the Analyze Dashboard.";
+      const lines = doc.splitTextToSize(
+        placeholder,
+        pageWidth - 2 * margin - indent
+      );
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(fontSize);
+      doc.setTextColor("#666"); // gray
+
+      lines.forEach((line) => {
+        checkNewPage(fontSize + space);
+        doc.text(line, margin + indent, currentY);
+        currentY += fontSize + space;
+      });
+
+      addText.malayalamPlaceholderAdded = true; // prevent duplicate
+    }
+    return; // stop further processing
+  }
+
+  // Normal text
+  doc.setFont("helvetica", style);
+  doc.setFontSize(fontSize);
+  doc.setTextColor(color);
+
+  const lines = doc.splitTextToSize(text, pageWidth - 2 * margin - indent);
+  lines.forEach((line) => {
+    checkNewPage(fontSize + space);
+    doc.text(line, margin + indent, currentY);
+    currentY += fontSize + space;
+  });
+}
+
+
+// Add headings / paragraphs from lines
+function addParagraphsFromLines(lines) {
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    if (trimmed.endsWith(":") || trimmed.startsWith("#")) {
+      addText(trimmed, {
+        size: 11,
+        style: "bold",
+        color: colors.primary,
+        space: 14,
+      });
+    } else {
+      addText(trimmed, { size: 10, space: 8 });
+    }
+  });
+}
+// ============================
+// Generate PDF Content
+// ============================
+
+// Executive Summary (only once)
+pageNum = 1;
+currentY = addHeader(pageNum);
+addSection("Executive Summary");
+addText(
+  "This comprehensive report contains both human-readable insights and structured data extracted from your document using advanced AI analysis.",
+  { size: 12 }
+);
+
+// Extract text from page and add paragraphs
+const humanContent = document.getElementById("summaryContainer")?.innerText || "";
+const lines = humanContent.split("\n");
+addParagraphsFromLines(lines);
+
+// Move to next page for Structured Insights
+addFooter();
+doc.addPage();
+// pageNum++;
+// currentY = addHeader(pageNum)
+
+          // function addText(text, options = {}) {
+          //   const fontSize = options.size || 11;
+          //   const style = options.style || "normal";
+          //   const color = options.color || colors.text;
+          //   const indent = options.indent || 0;
+
+          //   doc.setFontSize(fontSize);
+          //   doc.setFont("helvetica", style);
+          //   doc.setTextColor(color);
+
+          //   const lines = doc.splitTextToSize(
+          //     text,
+          //     pageWidth - 2 * margin - indent
+          //   );
+          //   lines.forEach((line) => {
+          //     checkNewPage(fontSize + 8);
+          //     doc.text(line, margin + indent, currentY);
+          //     currentY += fontSize + 8;
+          //   });
+          //   currentY += 10;
+          // }
+
+          // // Start PDF Generation
+          // currentY = addHeader(pageNum);
+
+          
+
+          
+
+          // Executive Summary
+          // addSection("Executive Summary");
+          // addText(
+          //   "This comprehensive report contains both human-readable insights and structured data extracted from your document using advanced AI analysis.",
+          //   { size: 12 }
+          // );
+
+          // // Add text to PDF
+          // function addText(text, options = {}) {
+          //   const fontSize = options.size || 11;
+          //   const style = options.style || "normal";
+          //   const color = options.color || colors.text;
+          //   const indent = options.indent || 0;
+          //   const space = options.space !== undefined ? options.space : 8;
+
+          //   // Detect if text has Malayalam
+          //   const hasMalayalam = /[\u0D00-\u0D7F]/.test(text);
+
+          //   if (hasMalayalam) {
+          //     // Skip Malayalam and write placeholder instead
+          //     const placeholder =
+          //       "Cannot add Malayalam text in PDF. You can see the summary on the Analyze Dashboard.";
+          //     const lines = doc.splitTextToSize(
+          //       placeholder,
+          //       pageWidth - 2 * margin - indent
+          //     );
+          //     doc.setFont("helvetica", style);
+          //     doc.setFontSize(fontSize);
+          //     doc.setTextColor(color);
+
+          //     lines.forEach((line) => {
+          //       checkNewPage(fontSize + space);
+          //       doc.text(line, margin + indent, currentY);
+          //       currentY += fontSize + space;
+          //     });
+
+          //     return; // Stop further processing for this text
+          //   }
+
+          //   // Normal text (non-Malayalam)
+          //   doc.setFont("helvetica", style);
+          //   doc.setFontSize(fontSize);
+          //   doc.setTextColor(color);
+
+          //   const lines = doc.splitTextToSize(
+          //     text,
+          //     pageWidth - 2 * margin - indent
+          //   );
+
+          //   lines.forEach((line) => {
+          //     checkNewPage(fontSize + space);
+          //     doc.text(line, margin + indent, currentY);
+          //     currentY += fontSize + space;
+          //   });
+          // }
+
+          // // Handle headings/paragraphs
+          // function addParagraphsFromLines(lines) {
+          //   lines.forEach((line) => {
+          //     const trimmed = line.trim();
+          //     if (!trimmed) return;
+
+          //     if (trimmed.endsWith(":") || trimmed.startsWith("#")) {
+          //       addText(trimmed, {
+          //         size: 11,
+          //         style: "bold",
+          //         color: colors.primary,
+          //         space: 14,
+          //       });
+          //     } else {
+          //       addText(trimmed, { size: 10, space: 8 });
+          //     }
+          //   });
+          // }
+
+          // Usage example
+          // addSection("Executive Summary");
+          // addText(
+          //   "This comprehensive report contains both human-readable insights and structured data extracted from your document using advanced AI analysis.",
+          //   { size: 12 }
+          // );
+
+          // // Get text from your page
+          // const humanContent =
+          //   document.getElementById("summaryContainer")?.innerText || "";
+          // const lines = humanContent.split("\n");
+
+          // // Add paragraphs
+          // addParagraphsFromLines(lines);
+
+          // // Start Structured Insights on new page
+          // addFooter();
+          // doc.addPage();
+          // pageNum++;
+          // currentY = addHeader(pageNum);
+
+          addSection("Structured Insights & Data");
+
+          // Action Items
+          addSection("Action Items", "✅");
+          const actionItems = document.querySelectorAll(
+            "#actionItemsContainer label span"
+          );
+          if (actionItems.length > 0) {
+            actionItems.forEach((item, index) => {
+              addText(`${index + 1}. ${item.textContent}`, {
+                indent: 20,
+                size: 10,
+              });
+            });
+          } else {
+            addText("No action items extracted from document.", { indent: 20 });
+          }
+
+          // Key Dates
+          addSection("Key Dates Timeline");
+          const timelineItems = document.querySelectorAll(
+            "#datesTimeline .timeline-item"
+          );
+          if (timelineItems.length > 0) {
+            timelineItems.forEach((item) => {
+              const date =
+                item.querySelector(".timeline-date")?.textContent || "";
+              const desc =
+                item.querySelector(".timeline-desc")?.textContent || "";
+
+              checkNewPage(30);
+              // Date box
+              doc.setFillColor(colors.accent);
+              doc.roundedRect(margin + 20, currentY - 8, 80, 20, 3, 3, "F");
+              doc.setTextColor("#ffffff");
+              doc.setFontSize(9);
+              doc.setFont("helvetica", "bold");
+              doc.text(date, margin + 25, currentY + 4);
+
+              // Description
+              doc.setTextColor(colors.text);
+              doc.setFont("helvetica", "normal");
+              doc.text(desc, margin + 110, currentY + 4);
+              currentY += 35;
+            });
+          } else {
+            addText("No key dates extracted from document.", { indent: 20 });
+          }
+
+          // Department
+          addSection("Department Classification");
+          const dept =
+            document.querySelector("#departmentContainer .department-badge")
+              ?.textContent || "Not detected";
+          addText(`Detected Department: ${dept}`, {
+            size: 12,
+            style: "bold",
+            color: colors.primary,
+          });
+
+          // Confidence Score
+          addSection("Analysis Confidence");
+          const confidence =
+            document.getElementById("confidenceLabel")?.textContent || "0%";
+          addText(`Overall Confidence Score: ${confidence}`, {
+            size: 12,
+            style: "bold",
+            color: colors.primary,
+          });
+          addText(
+            "This score represents the system's confidence in the accuracy of extracted information."
+          );
+
+          // Languages
+          addSection("Language Detection");
+          const langBadges = document.querySelectorAll(
+            "#langBadges .lang-badge"
+          );
+          if (langBadges.length > 0) {
+            let langText = "Detected Languages: ";
+            langBadges.forEach((badge, index) => {
+              langText += badge.textContent;
+              if (index < langBadges.length - 1) langText += ", ";
+            });
+            addText(langText, { size: 11 });
+          } else {
+            addText("No language detection data available.", { indent: 20 });
+          }
+
+          // Technical Info
+          addSection("Technical Information");
+          addText(
+            "• Document processed using advanced OCR and NLP technologies"
+          );
+          addText("• Multi-language support with confidence scoring");
+          addText("• Structured data extraction using machine learning models");
+
+          addFooter();
+
+          // Save with timestamp
+          const timestamp = new Date().toISOString().split("T")[0];
+          doc.save(`Infera_Complete_Report_${timestamp}.pdf`);
+        });
+
+      // Update button text to reflect comprehensive report
+      document.getElementById("downloadSummaryBtn").textContent =
+        "⬇️ Download Complete Report (PDF)";
+      document
+        .getElementById("copySummaryBtn")
+        .addEventListener("click", () => {
+          const txt = summaryContainer.textContent || "";
+          if (txt) copyToClipboard(txt);
+        });
+    </script>
+  </body>
+</html>
